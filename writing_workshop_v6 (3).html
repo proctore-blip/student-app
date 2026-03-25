@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Writing Workshop</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0efe9;
+  --card: #ffffff;
+  --surface: #f5f4f0;
+  --border: rgba(0,0,0,0.12);
+  --border2: rgba(0,0,0,0.22);
+  --txt: #1a1a18;
+  --txt2: #6b6b67;
+  --purple: #3C3489;
+  --purple2: #534AB7;
+  --purple3: #7F77DD;
+  --purple-pale: #EEEDFE;
+  --purple-border: #AFA9EC;
+  --green-pale: #E1F5EE;
+  --green: #0F6E56;
+  --amber-pale: #FAEEDA;
+  --amber: #854F0B;
+  --coral-pale: #FAECE7;
+  --coral: #993C1D;
+  --r: 8px;
+  --rl: 12px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  padding: 1.5rem 1rem 4rem;
+}
+
+.app {
+  max-width: 820px;
+  margin: 0 auto;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 2rem 1.75rem 2.5rem;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+
+/* ── Header ── */
+.header { text-align: center; margin-bottom: 1.75rem; }
+.header h1 { font-size: 26px; font-weight: 700; color: var(--purple); margin-bottom: 5px; }
+.header p { font-size: 15px; color: var(--txt2); }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+.tab { padding: 8px 18px; font-size: 14px; font-weight: 500; border: none; background: none; color: var(--txt2); cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1px; }
+.tab.active { color: var(--purple2); border-bottom-color: var(--purple2); }
+.tab:hover:not(.active) { color: var(--txt); }
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── Name screen ── */
+.name-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center;
+  padding: 3rem 1rem;
+}
+.name-wrap h2 { font-size: 24px; font-weight: 700; color: var(--purple); margin-bottom: 8px; }
+.name-wrap p { font-size: 15px; color: var(--txt2); margin-bottom: 1.75rem; }
+.name-row { display: flex; gap: 8px; width: 100%; max-width: 320px; }
+.name-row input {
+  flex: 1; font-family: inherit; font-size: 16px;
+  padding: 11px 14px; border-radius: var(--rl);
+  border: 1.5px solid var(--border2);
+  color: var(--txt); text-align: center;
+}
+.name-row input:focus { outline: none; border-color: var(--purple3); }
+.name-err { font-size: 13px; color: var(--coral); margin-top: 8px; min-height: 18px; }
+
+/* ── Buttons ── */
+.btn-purple {
+  padding: 11px 22px; font-family: inherit; font-size: 15px; font-weight: 600;
+  border-radius: var(--rl); border: none;
+  background: var(--purple); color: #fff; cursor: pointer;
+}
+.btn-purple:hover { background: var(--purple2); }
+.btn-purple:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-outline {
+  padding: 10px 18px; font-family: inherit; font-size: 14px;
+  border-radius: var(--rl); border: 1px solid var(--border2);
+  background: transparent; color: var(--txt); cursor: pointer;
+}
+.btn-outline:hover { background: var(--surface); }
+.btn-small {
+  font-size: 12px; padding: 3px 10px; border-radius: 99px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--txt2); cursor: pointer;
+}
+.btn-small:hover { background: var(--surface); }
+
+/* ── Greeting ── */
+.greeting { font-size: 13px; color: var(--txt2); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+.greeting strong { color: var(--purple); }
+
+/* ── Prompt card ── */
+.prompt-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--rl); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem;
+}
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.badge {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 99px;
+}
+.b-genre { background: var(--purple-pale); color: var(--purple2); }
+.b-skill { background: var(--green-pale); color: var(--green); }
+.b-conflict { background: var(--amber-pale); color: var(--amber); }
+.prompt-text { font-size: 15.5px; line-height: 1.7; margin-bottom: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { font-size: 12px; padding: 3px 10px; border-radius: 99px; background: var(--card); border: 1px solid var(--border); color: var(--txt2); }
+
+/* ── Write area ── */
+.write-label { font-size: 13px; font-weight: 600; color: var(--txt2); display: block; margin-bottom: 6px; }
+#student-text {
+  width: 100%; min-height: 200px; font-family: inherit;
+  font-size: 15px; line-height: 1.75; padding: 12px 14px;
+  border: 1.5px solid var(--border2); border-radius: var(--rl);
+  color: var(--txt); resize: vertical; display: block;
+}
+#student-text:focus { outline: none; border-color: var(--purple3); }
+.meta { display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: var(--txt2); }
+.skill-hint { font-style: italic; color: var(--purple2); }
+#cap-feedback { font-size: 12px; margin-top: 5px; min-height: 18px; }
+.cap-ok { color: var(--green); }
+.cap-warn { color: #7a5c00; background: #fffbea; border: 1px solid #f0d060; border-radius: 99px; padding: 2px 10px; display: inline-block; }
+.spell-warn {
+  background: #fffbea; border: 1px solid #f0d060; border-radius: var(--r);
+  padding: .7rem 1rem; color: #7a5c00; font-size: 13px; margin-top: 8px; line-height: 1.6;
+}
+#error-msg { margin-top: 8px; }
+.err-box { background: #fdf0f0; border: 1px solid #f0b0b0; border-radius: var(--r); padding: .8rem 1rem; color: #8a2020; font-size: 13px; }
+
+/* ── Loading ── */
+.loading { text-align: center; padding: 3rem; color: var(--txt2); }
+.spinner { display: inline-block; width: 24px; height: 24px; border: 2.5px solid var(--border); border-top-color: var(--purple3); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Results ── */
+.total-card { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--rl); padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+.score-circle { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.score-circle span { font-size: 19px; font-weight: 700; color: #2a2a18; }
+.score-label { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.score-sub { font-size: 13px; color: var(--txt2); line-height: 1.5; }
+.sec-title { font-size: 12px; font-weight: 700; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.rub-row { margin-bottom: 12px; }
+.rub-head { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+.rub-name { font-weight: 600; }
+.rub-lbl { color: var(--txt2); }
+.bar-track { height: 9px; background: var(--surface); border-radius: 99px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 99px; transition: width .9s cubic-bezier(.22,1,.36,1); }
+.sug-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--rl); padding: .9rem 1.1rem; margin-bottom: 8px; }
+.sug-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 9px; border-radius: 99px; display: inline-block; margin-bottom: 7px; }
+.sug-text { font-size: 13.5px; line-height: 1.6; }
+.improved-box { background: var(--purple-pale); border: 1px solid var(--purple-border); border-radius: var(--rl); padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+.improved-lbl { font-size: 11px; font-weight: 700; color: var(--purple2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.improved-text { font-size: 13.5px; line-height: 1.7; color: var(--purple); }
+.revision-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--rl); padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+#revision-text { width: 100%; min-height: 130px; font-family: inherit; font-size: 14px; line-height: 1.7; padding: 10px 12px; border: 1.5px solid var(--border2); border-radius: var(--r); color: var(--txt); resize: vertical; }
+#revision-text:focus { outline: none; border-color: var(--purple3); }
+.rev-check { font-size: 13px; font-style: italic; color: var(--txt2); margin-top: 7px; min-height: 18px; }
+.mb1 { margin-bottom: 1.25rem; }
+
+/* ── Word lists ── */
+.word-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px,1fr)); gap: 12px; }
+.word-col { background: var(--surface); border-radius: var(--rl); padding: .9rem 1rem; }
+.word-col h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.word-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.pill { font-size: 12px; padding: 3px 9px; border-radius: 99px; background: var(--card); border: 1px solid var(--border); cursor: pointer; color: var(--txt); }
+.pill:hover { background: var(--purple-pale); border-color: var(--purple-border); color: var(--purple2); }
+.copy-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--purple); color: #fff; padding: 8px 20px; border-radius: 99px; font-size: 13px; pointer-events: none; animation: fadeup 1.8s ease forwards; z-index: 9999; }
+@keyframes fadeup { 0%{opacity:0;transform:translateX(-50%) translateY(8px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 75%{opacity:1} 100%{opacity:0} }
+
+/* ── Teacher button & modal ── */
+.teacher-btn { position: fixed; bottom: 16px; right: 16px; font-size: 11px; padding: 6px 13px; border-radius: 99px; border: 1px solid var(--border2); background: var(--card); color: var(--txt2); cursor: pointer; opacity: 0.55; z-index: 100; }
+.teacher-btn:hover { opacity: 1; }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 2rem 1rem; }
+.overlay.open { display: flex; }
+.modal { background: var(--card); border-radius: 16px; padding: 1.75rem; width: 100%; max-width: 480px; }
+.modal h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.modal > p { font-size: 13px; color: var(--txt2); margin-bottom: 1.25rem; }
+.field { margin-bottom: 1rem; }
+.field label { font-size: 11px; font-weight: 700; color: var(--txt2); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+.field select, .field input { width: 100%; font-family: inherit; font-size: 14px; padding: 9px 12px; border-radius: var(--r); border: 1px solid var(--border2); color: var(--txt); }
+.field select:focus, .field input:focus { outline: none; border-color: var(--purple3); }
+.btn-row { display: flex; gap: 8px; margin-top: 1.25rem; }
+.t-msg { font-size: 13px; margin-top: 8px; min-height: 18px; }
+.t-ok { color: var(--green); }
+.t-err { color: var(--coral); }
+.pw-screen { }
+.settings-screen { display: none; }
+
+/* Dashboard */
+.dash-top { background: var(--surface); border-radius: var(--rl); padding: .9rem 1.25rem; margin-bottom: 1rem; display: flex; gap: 20px; flex-wrap: wrap; }
+.dstat-num { font-size: 22px; font-weight: 700; color: var(--purple); }
+.dstat-lbl { font-size: 11px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.04em; }
+.dash-controls { display: flex; gap: 8px; margin-bottom: 1rem; flex-wrap: wrap; }
+.dash-search { flex:1; min-width:120px; font-family:inherit; font-size:13px; padding:7px 11px; border-radius:var(--r); border:1px solid var(--border2); color:var(--txt); }
+.dash-search:focus { outline:none; border-color:var(--purple3); }
+.btn-export { font-size:12px; padding:7px 12px; border-radius:var(--r); border:1px solid var(--border2); background:transparent; color:var(--txt2); cursor:pointer; }
+.btn-export:hover { background:var(--surface); }
+.btn-danger { font-size:12px; padding:7px 12px; border-radius:var(--r); border:1px solid #f0b0b0; background:#fdf0f0; color:#8a2020; cursor:pointer; }
+.btn-danger:hover { background:#f9e0e0; }
+.sub-card { background:var(--card); border:1px solid var(--border); border-radius:var(--rl); padding:1rem 1.25rem; margin-bottom:10px; }
+.sub-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; flex-wrap:wrap; gap:6px; }
+.sub-name { font-size:15px; font-weight:700; color:var(--purple); }
+.sub-meta { font-size:12px; color:var(--txt2); }
+.score-pill { font-size:12px; font-weight:700; padding:3px 11px; border-radius:99px; }
+.sub-rub { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+.rub-pill { font-size:11px; padding:2px 8px; border-radius:99px; }
+.sub-toggle { font-size:12px; color:var(--purple2); cursor:pointer; background:none; border:none; padding:0; }
+.sub-toggle:hover { text-decoration:underline; }
+.sub-detail { display:none; margin-top:10px; border-top:1px solid var(--border); padding-top:10px; }
+.sub-detail.open { display:block; }
+.sub-lbl { font-size:11px; font-weight:700; color:var(--txt2); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; margin-top:8px; }
+.sub-txt { font-size:13px; line-height:1.6; background:var(--surface); border-radius:var(--r); padding:8px 10px; margin-bottom:4px; }
+.dash-empty { text-align:center; padding:2rem; color:var(--txt2); font-size:14px; }
+.divider { border:none; border-top:1px solid var(--border); margin:1.25rem 0; }
+
+  .stfd-header { text-align:center; margin-bottom:1.25rem; }
+  .stfd-header h3 { font-size:16px; font-weight:700; color:var(--purple); margin-bottom:4px; }
+  .stfd-header p { font-size:13px; color:var(--txt2); }
+
+  .lens-steps { display:flex; gap:6px; margin-bottom:1.25rem; }
+  .lens-step { flex:1; text-align:center; padding:8px 4px; border-radius:var(--rl); border:1.5px solid var(--border); font-size:12px; font-weight:700; color:var(--txt2); background:var(--surface); transition:all 0.2s; }
+  .lens-step.active { border-color:var(--purple3); background:var(--purple-pale); color:var(--purple); }
+  .lens-step.done { border-color:#9FE1CB; background:#E1F5EE; color:#0F6E56; }
+  .lens-icon { font-size:18px; display:block; margin-bottom:3px; }
+
+  .lens-card { border-radius:var(--rl); padding:1.25rem 1.5rem; margin-bottom:1rem; border:1.5px solid; }
+  .lens-see   { background:#EEF4FF; border-color:#B5D4F4; }
+  .lens-think { background:#EEEDFE; border-color:#AFA9EC; }
+  .lens-feel  { background:#FEF3E2; border-color:#FAC775; }
+  .lens-do    { background:#E1F5EE; border-color:#9FE1CB; }
+
+  .lens-title { font-size:15px; font-weight:700; margin-bottom:4px; }
+  .lens-see   .lens-title { color:#185FA5; }
+  .lens-think .lens-title { color:#534AB7; }
+  .lens-feel  .lens-title { color:#854F0B; }
+  .lens-do    .lens-title { color:#0F6E56; }
+
+  .lens-q { font-size:13px; margin-bottom:10px; line-height:1.5; }
+  .lens-see   .lens-q { color:#185FA5; }
+  .lens-think .lens-q { color:#534AB7; }
+  .lens-feel  .lens-q { color:#854F0B; }
+  .lens-do    .lens-q { color:#0F6E56; }
+
+  .lens-vocab { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+  .lv { font-size:11px; padding:2px 8px; border-radius:99px; cursor:pointer; border:1px solid; font-weight:500; }
+  .lens-see   .lv { background:#dbeafe; border-color:#93c5fd; color:#1e40af; }
+  .lens-think .lv { background:#ede9fe; border-color:#c4b5fd; color:#5b21b6; }
+  .lens-feel  .lv { background:#fef3c7; border-color:#fcd34d; color:#92400e; }
+  .lens-do    .lv { background:#d1fae5; border-color:#6ee7b7; color:#065f46; }
+  .lv:hover { opacity:0.75; }
+
+  .lens-ta { width:100%; font-family:inherit; font-size:14px; line-height:1.7; padding:10px 12px; border-radius:var(--r); resize:vertical; border:1.5px solid rgba(0,0,0,0.15); min-height:90px; background:rgba(255,255,255,0.75); color:var(--txt); }
+  .lens-ta:focus { outline:none; border-color:rgba(0,0,0,0.3); }
+  .lens-nav { display:flex; gap:8px; margin-top:10px; align-items:center; }
+  .lens-wc { font-size:12px; color:var(--txt2); flex:1; }
+
+  .combined-box { background:var(--purple-pale); border:1px solid var(--purple-border); border-radius:var(--rl); padding:1.25rem 1.5rem; margin-bottom:1.25rem; }
+  .combined-lbl { font-size:11px; font-weight:700; color:var(--purple2); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px; }
+  .combined-text { font-size:14px; line-height:1.9; color:var(--purple); }
+  .cs { border-radius:3px; padding:1px 3px; }
+  .cs-see   { background:#dbeafe; }
+  .cs-think { background:#ede9fe; }
+  .cs-feel  { background:#fef3c7; }
+  .cs-do    { background:#d1fae5; }
+
+  .lsg { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1.25rem; }
+  .lsc { border-radius:var(--rl); padding:.9rem 1rem; }
+  .lsc-see   { background:#EEF4FF; border:1px solid #B5D4F4; }
+  .lsc-think { background:#EEEDFE; border:1px solid #AFA9EC; }
+  .lsc-feel  { background:#FEF3E2; border:1px solid #FAC775; }
+  .lsc-do    { background:#E1F5EE; border:1px solid #9FE1CB; }
+  .lsc-name { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
+  .lsc-see   .lsc-name { color:#185FA5; }
+  .lsc-think .lsc-name { color:#534AB7; }
+  .lsc-feel  .lsc-name { color:#854F0B; }
+  .lsc-do    .lsc-name { color:#0F6E56; }
+  .lsc-num { font-size:22px; font-weight:700; margin-bottom:3px; color:var(--txt); }
+  .lsc-tip { font-size:12px; line-height:1.5; color:var(--txt2); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1>✏️ My Writing Workshop</h1>
+    <p>Read the story starter, then continue writing!</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-write" onclick="switchTab('write')">✏️ Write</button>
+    <button class="tab" id="tab-words" onclick="switchTab('words')">📖 Word Lists</button>
+  </div>
+
+  <!-- WRITE TAB -->
+  <div class="view active" id="write-view">
+
+    <!-- NAME SCREEN -->
+    <div id="name-screen">
+      <div class="name-wrap">
+        <h2>Welcome! ✏️</h2>
+        <p>Enter your first name to start writing.</p>
+        <div class="name-row">
+          <input type="text" id="name-input" placeholder="Your first name..." maxlength="30" autocomplete="off" />
+          <button class="btn-purple" id="start-btn" onclick="startWriting()">Start →</button>
+        </div>
+        <div class="name-err" id="name-err"></div>
+      </div>
+    </div>
+
+    <!-- WRITING SCREEN -->
+    <div id="writing-screen" style="display:none">
+      <div class="greeting">
+        <span>Writing as <strong id="greeting-name"></strong></span>
+        <button class="btn-small" onclick="changeName()">Change name</button>
+      </div>
+
+      <div class="prompt-card">
+        <div class="badges">
+          <span class="badge b-genre" id="b-genre"></span>
+          <span class="badge b-skill" id="b-skill"></span>
+          <span class="badge b-conflict" id="b-conflict"></span>
+        </div>
+        <div class="prompt-text" id="prompt-text"></div>
+        <div class="chips" id="prompt-chips"></div>
+      </div>
+
+      <div class="stfd-header">
+        <h3>Build your response</h3>
+        <p>Write a little for each lens — then we'll put it all together!</p>
+      </div>
+
+      <div class="lens-steps">
+        <div class="lens-step active" id="step-0"><span class="lens-icon">&#128065;</span>SEE</div>
+        <div class="lens-step" id="step-1"><span class="lens-icon">&#128161;</span>THINK</div>
+        <div class="lens-step" id="step-2"><span class="lens-icon">&#10084;</span>FEEL</div>
+        <div class="lens-step" id="step-3"><span class="lens-icon">&#9889;</span>DO</div>
+      </div>
+
+      <div class="lens-card lens-see" id="lens-0">
+        <div class="lens-title">&#128065; SEE</div>
+        <div class="lens-q">What does your character see, hear, smell, or touch? Describe the scene around them.</div>
+        <div class="lens-vocab" id="vocab-see"></div>
+        <textarea class="lens-ta" id="text-see" placeholder="Write what your character notices..." spellcheck="true" oninput="onLensInput(0)"></textarea>
+        <div class="lens-nav">
+          <span class="lens-wc" id="wc-see">0 words</span>
+          <button class="btn-purple" onclick="goLens(1)">Next: Think &#8250;</button>
+        </div>
+      </div>
+
+      <div class="lens-card lens-think" id="lens-1" style="display:none">
+        <div class="lens-title">&#128161; THINK</div>
+        <div class="lens-q">What is your character thinking right now? What questions are going through their mind?</div>
+        <div class="lens-vocab" id="vocab-think"></div>
+        <textarea class="lens-ta" id="text-think" placeholder="Write what your character is thinking..." spellcheck="true" oninput="onLensInput(1)"></textarea>
+        <div class="lens-nav">
+          <span class="lens-wc" id="wc-think">0 words</span>
+          <button class="btn-outline" onclick="goLens(0)">&#8249; Back</button>
+          <button class="btn-purple" onclick="goLens(2)">Next: Feel &#8250;</button>
+        </div>
+      </div>
+
+      <div class="lens-card lens-feel" id="lens-2" style="display:none">
+        <div class="lens-title">&#10084; FEEL</div>
+        <div class="lens-q">How does your character feel inside? Are they scared, excited, confused, or hopeful?</div>
+        <div class="lens-vocab" id="vocab-feel"></div>
+        <textarea class="lens-ta" id="text-feel" placeholder="Write how your character feels..." spellcheck="true" oninput="onLensInput(2)"></textarea>
+        <div class="lens-nav">
+          <span class="lens-wc" id="wc-feel">0 words</span>
+          <button class="btn-outline" onclick="goLens(1)">&#8249; Back</button>
+          <button class="btn-purple" onclick="goLens(3)">Next: Do &#8250;</button>
+        </div>
+      </div>
+
+      <div class="lens-card lens-do" id="lens-3" style="display:none">
+        <div class="lens-title">&#9889; DO</div>
+        <div class="lens-q">What does your character do next? Show their action — make it vivid and specific!</div>
+        <div class="lens-vocab" id="vocab-do"></div>
+        <textarea class="lens-ta" id="text-do" placeholder="Write what your character does..." spellcheck="true" oninput="onLensInput(3)"></textarea>
+        <div class="lens-nav">
+          <span class="lens-wc" id="wc-do">0 words</span>
+          <button class="btn-outline" onclick="goLens(2)">&#8249; Back</button>
+        </div>
+      </div>
+
+      <div id="cap-feedback" style="font-size:12px;margin-bottom:6px;margin-top:4px"></div>
+      <div id="spell-feedback"></div>
+      <button class="btn-purple" style="width:100%;padding:13px;font-size:15px;margin-top:.75rem;opacity:0.45" id="check-btn" onclick="checkWriting()" disabled>Complete all 4 lenses to submit &#10022;</button>
+      <div id="error-msg"></div>
+      <div style="margin-top:1rem;text-align:center">
+        <button class="btn-small" onclick="generatePrompt()">&#8634; New prompt</button>
+      </div>
+    </div>
+
+        <!-- LOADING -->
+    <div id="loading-screen" style="display:none">
+      <div class="loading">
+        <div class="spinner"></div><br>
+        Reading your story carefully...
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="results-screen" style="display:none">
+
+      <div class="combined-box">
+        <div class="combined-lbl">Your complete response</div>
+        <div class="combined-text" id="combined-text"></div>
+      </div>
+
+      <div class="total-card">
+        <div class="score-circle" id="score-circle"><span id="score-num">–</span></div>
+        <div>
+          <div class="score-label" id="score-label"></div>
+          <div class="score-sub" id="score-sub"></div>
+        </div>
+      </div>
+
+      <div class="mb1">
+        <div class="sec-title">How you did on each lens</div>
+        <div class="lsg" id="lens-scores"></div>
+      </div>
+
+      <div class="mb1">
+        <div class="sec-title">Overall score breakdown</div>
+        <div id="rubric-bars"></div>
+      </div>
+
+      <div class="mb1">
+        <div class="sec-title">Suggestions</div>
+        <div id="suggestions"></div>
+      </div>
+
+      <div class="improved-box">
+        <div class="improved-lbl">Example improvement</div>
+        <div class="improved-text" id="improved"></div>
+      </div>
+
+      <div class="revision-box mb1">
+        <div class="sec-title">Revise it here</div>
+        <textarea id="revision-text" placeholder="Rewrite your improved version here..." oninput="checkRevision()"></textarea>
+        <div class="rev-check" id="rev-check"></div>
+      </div>
+
+      <button class="btn-outline" style="width:100%" onclick="resetToWrite()">↺ Write something new</button>
+    </div>
+
+  </div><!-- /write-view -->
+
+  <!-- WORD LISTS TAB -->
+  <div class="view" id="words-view">
+    <p style="font-size:13px;color:var(--txt2);margin-bottom:1rem">Click any word to copy it!</p>
+    <div class="word-grid" id="word-grid"></div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Teacher button -->
+<button class="teacher-btn" onclick="openTeacher()">⚙ Teacher</button>
+
+<!-- Teacher modal -->
+<div class="overlay" id="teacher-overlay" onclick="overlayClick(event)">
+  <div class="modal">
+
+    <div class="pw-screen" id="pw-screen">
+      <h2>Teacher settings</h2>
+      <p>Enter your password to access settings and student submissions.</p>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="pw-input" placeholder="Password..." onkeydown="if(event.key==='Enter')checkPw()" />
+      </div>
+      <div class="t-msg t-err" id="pw-err"></div>
+      <div class="btn-row">
+        <button class="btn-purple" style="flex:1" onclick="checkPw()">Enter</button>
+        <button class="btn-outline" onclick="closeTeacher()">Cancel</button>
+      </div>
+      <p style="margin-top:1rem;font-size:11px;color:var(--txt2)">Default password: <strong>teacher123</strong></p>
+    </div>
+
+    <div class="settings-screen" id="settings-screen">
+      <h2>Class settings</h2>
+      <p>Changes apply to all students on this device.</p>
+
+      <div class="field">
+        <label>Genre</label>
+        <select id="t-genre">
+          <option value="">Random each time</option>
+          <option value="Mystery">Mystery</option>
+          <option value="Fantasy">Fantasy</option>
+          <option value="Adventure">Adventure</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Skill Focus</label>
+        <select id="t-skill">
+          <option value="">Random each time</option>
+          <option value="Description">Description</option>
+          <option value="Dialogue">Dialogue</option>
+          <option value="Feelings">Feelings</option>
+          <option value="Action">Action</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Change password (leave blank to keep current)</label>
+        <input type="password" id="t-newpw" placeholder="New password..." />
+      </div>
+      <div class="t-msg t-ok" id="t-msg"></div>
+      <div class="btn-row">
+        <button class="btn-purple" style="flex:1" onclick="saveSettings()">Save settings</button>
+        <button class="btn-outline" onclick="closeTeacher()">Close</button>
+      </div>
+
+      <hr class="divider">
+      <div class="sec-title" style="margin-bottom:.75rem">Student submissions</div>
+      <div class="dash-controls">
+        <input class="dash-search" type="text" id="dash-search" placeholder="Search by name..." oninput="renderDash()" />
+        <button class="btn-export" onclick="exportCSV()">Export CSV</button>
+        <button class="btn-danger" onclick="clearData()">Clear all</button>
+      </div>
+      <div id="dash-top"></div>
+      <div id="dash-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────
+const API_KEY = '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';
+
+const VOCAB = {
+  SEE:   ['absurd','abrupt','arid','bizarre','bland','boisterous','delicate','exquisite','fabulous','grotesque','hazy','immense','jagged','massive','miniature','murky','peculiar','subtle','tranquil','turbulent','vibrant','vivid'],
+  THINK: ['acknowledge','clarify','complex','consult','detect','examine','investigate','noteworthy','perceive','ponder','predict','significant'],
+  FEEL:  ['anguish','anxious','arrogant','awkward','bewildered','confident','disgruntled','distraught','empathy','flustered','frantic','hostile','irate','lethargic','perplexed','reluctant','remorse','sensitive'],
+  DO:    ['abandon','acquire','attempt','avoid','beckon','convince','declare','devour','embark','encounter','enhance','navigate','pursue','retrieve','strive','transform','venture','wander']
+};
+const SAID = {
+  NEUTRAL:  ['called','stated','explained','replied','answered','mentioned'],
+  HAPPY:    ['cheered','laughed','beamed','gushed','giggled'],
+  SAD:      ['sighed','cried','sobbed','whimpered'],
+  UPSET:    ['snapped','growled','protested','demanded','insisted','sneered'],
+  THINKING: ['wondered','pondered','speculated','questioned','suggested'],
+  QUIET:    ['whispered','murmured','muttered'],
+  LOUD:     ['shouted','yelled','exclaimed','declared','proclaimed']
+};
+const PERSONALITY = ['confident','bold','cheerful','friendly','thoughtful','curious','calm','empathetic','loyal','patient','assertive','energetic','serious','determined','awkward','intelligent','shy','sensitive','reserved','observant'];
+const CHAR = {
+  build:    ['tall','short','medium height','slim','stocky','muscular','broad-shouldered','lanky','petite','heavyset'],
+  hair:     ['curly hair','straight hair','wavy hair','long hair','short hair','spiky hair','messy hair','braided hair','a ponytail','a buzz cut'],
+  eyes:     ['blue eyes','brown eyes','green eyes','hazel eyes','gray eyes','bright eyes','tired eyes','sharp eyes'],
+  face:     ['freckled skin','pale skin','tan skin','dark skin','rosy cheeks','a round face','high cheekbones','thin lips'],
+  feature:  ['a scar on their cheek','a dimpled smile','crooked teeth','pierced ears','a birthmark','braces','long eyelashes','a gap-toothed smile'],
+  voice:    ['a deep voice','a high-pitched voice','a raspy voice','a soft voice','a loud voice','a quiet voice','quick speech','slow speech'],
+  physical: ['step forward cautiously','search the area carefully','follow something unusual','hide behind an object','move closer to investigate','pick up a strange item','turn and run','reach out to touch something'],
+  social:   ['confront someone directly','ask a serious question','warn others about danger','call out for help','challenge someone\'s idea','try to convince someone','interrupt a conversation','refuse to cooperate'],
+  internal: ['hesitate before acting','make a quick decision','question what is happening','rethink their plan','fight the urge to panic','focus on staying calm','remember something important','decide to take a risk']
+};
+const SKILL_HINTS = {
+  Description: 'Hint: describe what your character sees, hears, smells, or feels.',
+  Dialogue:    'Hint: use "quotation marks" to show what your character says.',
+  Feelings:    'Hint: show what your character is thinking and feeling inside.',
+  Action:      'Hint: use strong action verbs to show movement and energy.'
+};
+const MISSPELLINGS = {
+  'alot':'a lot','becuase':'because','beleive':'believe','couldnt':"couldn't",
+  'definately':'definitely','diffrent':'different','doesnt':"doesn't",
+  'dont':"don't",'everytime':'every time','freind':'friend','happend':'happened',
+  'heared':'heard','intresting':'interesting','isnt':"isn't",'knowed':'knew',
+  'libary':'library','occured':'occurred','pepole':'people','plaied':'played',
+  'probaly':'probably','recieve':'receive','realy':'really','remeber':'remember',
+  'seperate':'separate','shouldnt':"shouldn't",'similiar':'similar',
+  'somthing':'something','suprise':'surprise','teh':'the','thier':'their',
+  'thru':'through','tommorrow':'tomorrow','truely':'truly','wich':'which',
+  'wierd':'weird','wont':"won't",'wouldnt':"wouldn't",'writting':'writing',
+  'yesturday':'yesterday','youre':"you're",'becouse':'because',
+  'beutiful':'beautiful','climed':'climbed','comed':'came','finaly':'finally',
+  'geting':'getting','haveing':'having','lookt':'looked','mooved':'moved',
+  'nite':'night','peice':'piece','puting':'putting','runing':'running',
+  'sed':'said','stoped':'stopped','thay':'they','wached':'watched',
+  'walkt':'walked','wantted':'wanted','whent':'went','writed':'wrote'
+};
+
+// ── State ─────────────────────────────────────────────────────────────────
+let studentName = sessionStorage.getItem('ww_name') || '';
+let currentState = {};
+let teacherPw = localStorage.getItem('ww_pw') || 'teacher123';
+let originalWriting = '';
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function show(id) { document.getElementById(id).style.display = 'block'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+// ── Name screen ───────────────────────────────────────────────────────────
+function startWriting() {
+  var val = document.getElementById('name-input').value.trim();
+  if (!val) {
+    document.getElementById('name-err').textContent = 'Please enter your name first!';
+    return;
+  }
+  studentName = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+  sessionStorage.setItem('ww_name', studentName);
+  hide('name-screen');
+  show('writing-screen');
+  document.getElementById('greeting-name').textContent = studentName;
+  generatePrompt();
+}
+
+function changeName() {
+  studentName = '';
+  sessionStorage.removeItem('ww_name');
+  hide('writing-screen');
+  hide('results-screen');
+  hide('loading-screen');
+  show('name-screen');
+  document.getElementById('name-input').value = '';
+  document.getElementById('name-err').textContent = '';
+}
+
+// ── Prompt generator ──────────────────────────────────────────────────────
+function generatePrompt() {
+  var savedGenre = localStorage.getItem('ww_genre') || '';
+  var savedSkill = localStorage.getItem('ww_skill') || '';
+  var genre    = savedGenre || pick(['Mystery','Fantasy','Adventure']);
+  var skill    = savedSkill || pick(['Description','Dialogue','Feelings','Action']);
+  var conflict = pick(['External','Internal']);
+  // Pick 4 random physical trait categories from the 6 available
+  var allPhysical = [
+    { label: 'build',   val: pick(CHAR.build) },
+    { label: 'hair',    val: pick(CHAR.hair) },
+    { label: 'eyes',    val: pick(CHAR.eyes) },
+    { label: 'face',    val: pick(CHAR.face) },
+    { label: 'feature', val: pick(CHAR.feature) },
+    { label: 'voice',   val: pick(CHAR.voice) }
+  ];
+  // Shuffle and take 4
+  allPhysical.sort(function(){ return Math.random() - 0.5; });
+  var chosenPhysical = allPhysical.slice(0, 4);
+  var build   = chosenPhysical.find(function(c){ return c.label === 'build'; });
+  var buildVal = build ? build.val : pick(CHAR.build);
+  var traitList = chosenPhysical.map(function(c){ return c.val; });
+
+  // 1 personality trait
+  var personality = pick(PERSONALITY);
+
+  // 1 action from H, I, or J combined
+  var allActions = [].concat(CHAR.physical, CHAR.social, CHAR.internal);
+  var action = pick(allActions);
+
+  var intros = {
+    Mystery: [
+      'Something was wrong — and only one person seemed to notice.',
+      'The clue had been there all along. Nobody had looked closely enough. Until now.',
+      'It started as an ordinary day. Then the ' + buildVal + ' stranger arrived and changed everything.'
+    ],
+    Fantasy: [
+      'In a world where magic was fading, one person still believed.',
+      'The map showed a place that wasn\'t supposed to exist — but the ' + buildVal + ' traveller had been there.',
+      'Beyond the iron gate, the rules of the ordinary world no longer applied.'
+    ],
+    Adventure: [
+      'The path ahead disappeared into thick forest, and there was no turning back.',
+      'Three days into the journey, they found something that wasn\'t on any map.',
+      'The ' + buildVal + ' figure stood at the edge of the cliff and looked down. This was it.'
+    ]
+  };
+  var endings = {
+    External: 'Then — without warning — everything got more complicated.',
+    Internal:  'But doubt crept in. Was this really the right thing to do?'
+  };
+  var ctas = [
+    'What happens next? Continue the story:',
+    'Write what this character does next:',
+    'Keep going — what does this character see, feel, or do?'
+  ];
+
+  var intro = pick(intros[genre]);
+
+  // Weave traits into natural flowing sentences
+  var t = traitList; // 4 traits
+  var bodyTemplates = [
+    'Standing there with ' + t[0] + ' and ' + t[1] + ', the character looked like someone who had seen a lot. Their ' + t[2] + ' gave nothing away, but ' + t[3] + ' told a different story. ' + personality.charAt(0).toUpperCase() + personality.slice(1) + ' by nature, they took a slow breath — then chose to ' + action + '.',
+
+    'You would notice the ' + t[0] + ' first, then the ' + t[1] + '. Up close, the ' + t[2] + ' was harder to ignore. Everything about them seemed ' + personality + ' — the way they held themselves, the way their ' + t[3] + ' caught the light. Without hesitating, they moved to ' + action + '.',
+
+    'The character had ' + t[0] + ', ' + t[1] + ', and ' + t[2] + ' that made them easy to remember. ' + t[3].charAt(0).toUpperCase() + t[3].slice(1) + ' set them apart from everyone else in the room. They were ' + personality + ' — and right now, that meant they had to ' + action + '.',
+
+    'At first glance: ' + t[0] + ', ' + t[1] + ', ' + t[2] + '. But it was the ' + t[3] + ' that stayed with you. There was something ' + personality + ' in the way they carried themselves. They scanned the room once, made a decision, and began to ' + action + '.',
+
+    'With ' + t[0] + ' and ' + t[1] + ', the character blended in — almost. The ' + t[2] + ' and ' + t[3] + ' made that impossible. People who met them always said the same thing: there was something ' + personality + ' about them that was hard to explain. Today, that quality would matter. They decided to ' + action + '.'
+  ];
+
+  var body = pick(bodyTemplates);
+  var end   = endings[conflict];
+  var cta   = pick(ctas);
+  var full  = intro + ' ' + body + ' ' + end + ' ' + cta;
+
+  currentState = { genre: genre, skill: skill, conflict: conflict, prompt: full };
+
+  document.getElementById('b-genre').textContent    = genre;
+  document.getElementById('b-skill').textContent    = skill;
+  document.getElementById('b-conflict').textContent = conflict;
+  document.getElementById('prompt-text').textContent = full;
+  document.getElementById('skill-hint').textContent  = SKILL_HINTS[skill] || '';
+  document.getElementById('prompt-chips').innerHTML  = traitList.concat([personality, action]).map(function(c){ return '<span class="chip">' + c + '</span>'; }).join('');
+  // Reset all lens textareas
+  LENS_IDS.forEach(function(lid, i) {
+    var ta = document.getElementById('text-' + lid);
+    if (ta) ta.value = '';
+    var wc = document.getElementById('wc-' + lid);
+    if (wc) wc.textContent = '0 words';
+    var card = document.getElementById('lens-' + i);
+    if (card) card.style.display = i === 0 ? 'block' : 'none';
+    var step = document.getElementById('step-' + i);
+    if (step) { step.classList.remove('active','done'); if (i === 0) step.classList.add('active'); }
+  });
+  currentLens = 0;
+  document.getElementById('cap-feedback').innerHTML = '';
+  document.getElementById('spell-feedback').innerHTML = '';
+  document.getElementById('error-msg').innerHTML = '';
+  updateSubmitBtn();
+}
+
+// ── Lens (STFD) logic ──────────────────────────────────────────────────────
+var LENS_IDS = ['see','think','feel','do'];
+var currentLens = 0;
+
+function buildVocabBars() {
+  var lensVocab = {
+    see:   VOCAB.SEE.slice(0,12),
+    think: VOCAB.THINK.slice(0,12),
+    feel:  VOCAB.FEEL.slice(0,12),
+    do:    VOCAB.DO.slice(0,12)
+  };
+  LENS_IDS.forEach(function(lid) {
+    var el = document.getElementById('vocab-' + lid);
+    if (!el) return;
+    el.innerHTML = lensVocab[lid].map(function(w) {
+      return '<span class="lv" onclick="insertWord(\'' + lid + '\',\'' + w + '\')">' + w + '</span>';
+    }).join('');
+  });
+}
+
+function insertWord(lid, word) {
+  var ta = document.getElementById('text-' + lid);
+  if (!ta) return;
+  var pos = ta.selectionStart;
+  var val = ta.value;
+  var before = val.substring(0, pos);
+  var after  = val.substring(pos);
+  var insert = (before.length && before[before.length-1] !== ' ' ? ' ' : '') + word + ' ';
+  ta.value = before + insert + after;
+  ta.selectionStart = ta.selectionEnd = pos + insert.length;
+  ta.focus();
+  onLensInput(LENS_IDS.indexOf(lid));
+}
+
+function onLensInput(idx) {
+  var lid = LENS_IDS[idx];
+  var ta = document.getElementById('text-' + lid);
+  if (!ta) return;
+  var text = ta.value.trim();
+  var words = text === '' ? 0 : text.split(/\s+/).length;
+  document.getElementById('wc-' + lid).textContent = words + (words === 1 ? ' word' : ' words');
+
+  // Cap check on active lens
+  var capEl = document.getElementById('cap-feedback');
+  var errors = findCapErrors(ta.value);
+  if (!ta.value.trim()) {
+    capEl.innerHTML = '';
+  } else if (!errors.length) {
+    capEl.innerHTML = '<span class="cap-ok">&#10003; Capitalisation looks good!</span>';
+  } else {
+    var labels = { start: 'start of writing', sentence: 'after . ! ?', pronoun: 'the word "I"' };
+    var types = [];
+    errors.forEach(function(e){ if (labels[e.rule] && types.indexOf(labels[e.rule]) === -1) types.push(labels[e.rule]); });
+    capEl.innerHTML = '<span class="cap-warn">&#9888; Check capitalisation: ' + types.join(', ') + '</span>';
+  }
+
+  updateSubmitBtn();
+}
+
+function goLens(idx) {
+  // Mark current as done if has content
+  var curId = LENS_IDS[currentLens];
+  var curVal = (document.getElementById('text-' + curId) || {}).value || '';
+  var stepEl = document.getElementById('step-' + currentLens);
+  if (stepEl) {
+    stepEl.classList.remove('active');
+    if (curVal.trim().length > 0) stepEl.classList.add('done');
+    else stepEl.classList.remove('done');
+  }
+
+  // Hide current lens card
+  var curCard = document.getElementById('lens-' + currentLens);
+  if (curCard) curCard.style.display = 'none';
+
+  // Show new lens card
+  currentLens = idx;
+  var newCard = document.getElementById('lens-' + currentLens);
+  if (newCard) newCard.style.display = 'block';
+
+  var newStep = document.getElementById('step-' + currentLens);
+  if (newStep) { newStep.classList.add('active'); newStep.classList.remove('done'); }
+
+  // Focus textarea
+  var newTa = document.getElementById('text-' + LENS_IDS[idx]);
+  if (newTa) setTimeout(function(){ newTa.focus(); }, 50);
+
+  updateSubmitBtn();
+  document.getElementById('cap-feedback').innerHTML = '';
+}
+
+function updateSubmitBtn() {
+  var allFilled = LENS_IDS.every(function(lid) {
+    var el = document.getElementById('text-' + lid);
+    return el && el.value.trim().split(/\s+/).length >= 3;
+  });
+  var btn = document.getElementById('check-btn');
+  if (allFilled) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.textContent = 'Check my writing \u2726';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.45';
+    var done = LENS_IDS.filter(function(lid){
+      var el = document.getElementById('text-' + lid);
+      return el && el.value.trim().split(/\s+/).length >= 3;
+    }).length;
+    btn.textContent = done + '/4 lenses complete \u2726';
+  }
+}
+
+function getCombinedText() {
+  return LENS_IDS.map(function(lid) {
+    return (document.getElementById('text-' + lid) || {}).value || '';
+  }).filter(Boolean).join(' ');
+}
+
+function showCombinedBox(texts) {
+  var names = ['SEE', 'THINK', 'FEEL', 'DO'];
+  var combined = document.getElementById('combined-text');
+  if (!combined) return;
+  combined.innerHTML = LENS_IDS.map(function(lid, i) {
+    var t = (texts[lid] || '').trim();
+    return t ? '<span class="cs cs-' + lid + '">' + t + '</span>' : '';
+  }).filter(Boolean).join(' ');
+}
+
+// ── Cap checker ───────────────────────────────────────────────────────────
+function findCapErrors(text) {
+  var errors = [];
+  // First letter of text
+  var firstMatch = text.match(/^[\s]*/);
+  var startIdx = firstMatch ? firstMatch[0].length : 0;
+  if (startIdx < text.length && text[startIdx] >= 'a' && text[startIdx] <= 'z') {
+    errors.push({ index: startIdx, rule: 'start' });
+  }
+  // After . ! ?
+  var re = /[.!?]\s+([a-z])/g;
+  var m;
+  while ((m = re.exec(text)) !== null) {
+    errors.push({ index: m.index + m[0].length - 1, rule: 'sentence' });
+  }
+  // Lone "i"
+  var ri = /(?<![a-zA-Z])i(?![a-zA-Z])/g;
+  while ((m = ri.exec(text)) !== null) {
+    errors.push({ index: m.index, rule: 'pronoun' });
+  }
+  return errors;
+}
+
+// ── Spell checker ─────────────────────────────────────────────────────────
+function getSpellWarning(text) {
+  var words = text.toLowerCase().match(/[a-z]+/g) || [];
+  var found = [];
+  words.forEach(function(w) {
+    if (MISSPELLINGS[w] && !found.find(function(f){ return f.w === w; })) {
+      found.push({ w: w, s: MISSPELLINGS[w] });
+    }
+  });
+  if (!found.length) return '';
+  var items = found.slice(0, 5).map(function(f){ return '<strong>' + f.w + '</strong> → ' + f.s; }).join(' &bull; ');
+  return '<div class="spell-warn">✏ Spelling to check: ' + items + (found.length > 5 ? ' and more...' : '') + '. You can still submit!</div>';
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────
+function checkWriting() {
+  var texts = {};
+  LENS_IDS.forEach(function(lid) {
+    texts[lid] = (document.getElementById('text-' + lid) || {}).value || '';
+  });
+  var text = getCombinedText();
+  if (text.trim().length < 20) {
+    document.getElementById('error-msg').innerHTML = '<div class="err-box">Please write something in each lens first!</div>';
+    return;
+  }
+  document.getElementById('error-msg').innerHTML = '';
+
+  var spellWarn = getSpellWarning(text);
+  document.getElementById('spell-feedback').innerHTML = spellWarn;
+
+  hide('writing-screen');
+  show('loading-screen');
+
+  var allDesc = Object.values ? Object.values(VOCAB).reduce(function(a,b){ return a.concat(b); }, []).slice(0,40).join(', ')
+    : [].concat(VOCAB.SEE, VOCAB.THINK, VOCAB.FEEL, VOCAB.DO).slice(0,40).join(', ');
+  var allSaid = [].concat(SAID.NEUTRAL, SAID.HAPPY, SAID.SAD, SAID.UPSET).slice(0,25).join(', ');
+
+  var seeText   = texts['see']   || '';
+  var thinkText = texts['think'] || '';
+  var feelText  = texts['feel']  || '';
+  var doText    = texts['do']    || '';
+
+  var sys = 'You are a warm, encouraging writing coach for elementary school students (K-5).\n' +
+    'The student wrote a response using the See/Think/Feel/Do framework. Score each lens AND overall rubric.\n\n' +
+    'SEE writing: ' + seeText + '\n' +
+    'THINK writing: ' + thinkText + '\n' +
+    'FEEL writing: ' + feelText + '\n' +
+    'DO writing: ' + doText + '\n\n' +
+    'Return ONLY valid JSON, no markdown:\n' +
+    '{"scores":{"descriptive_details":<1-4>,"character_development":<1-4>,"vocabulary":<1-4>,"sentence_variety":<1-4>},' +
+    '"lens_scores":{"see":{"score":<1-4>,"tip":"<specific encouraging tip for their SEE writing, 1 sentence>"},' +
+    '"think":{"score":<1-4>,"tip":"<specific tip for THINK, 1 sentence>"},' +
+    '"feel":{"score":<1-4>,"tip":"<specific tip for FEEL, 1 sentence>"},' +
+    '"do":{"score":<1-4>,"tip":"<specific tip for DO, 1 sentence>"}},' +
+    '"overall_message":"<1 warm encouraging sentence max 18 words>",' +
+    '"suggestions":[{"area":"Descriptive details","tip":"<1-2 sentences>"},{"area":"Characters","tip":"<1-2 sentences>"},{"area":"Word choice","tip":"<suggest actual vocab words>"},{"area":"Sentences","tip":"<1-2 sentences>"}],' +
+    '"improved_example":"Original: \\"<one weak sentence from their writing>\\" \u2192 Improved: \\"<vivid rewrite>\\""}';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: sys,
+      messages: [{ role: 'user', content: 'Story prompt: ' + currentState.prompt + '\n\nSEE: ' + seeText + '\n\nTHINK: ' + thinkText + '\n\nFEEL: ' + feelText + '\n\nDO: ' + doText }]
+    })
+  })
+  .then(function(res){ return res.json(); })
+  .then(function(data) {
+    if (data.error) throw new Error(data.error.message);
+    var raw = (data.content || []).map(function(b){ return b.text || ''; }).join('').trim().replace(/```json|```/g,'').trim();
+    var result = JSON.parse(raw);
+    originalWriting = text;
+    showResults(result, text);
+  })
+  .catch(function(err) {
+    hide('loading-screen');
+    show('writing-screen');
+    document.getElementById('error-msg').innerHTML = '<div class="err-box">Something went wrong: ' + err.message + '. Please try again!</div>';
+  });
+}
+
+// ── Show results ──────────────────────────────────────────────────────────
+function showResults(result, text) {
+  // Show combined coloured text
+  var texts = {};
+  LENS_IDS.forEach(function(lid){ texts[lid] = (document.getElementById('text-' + lid)||{}).value||''; });
+  showCombinedBox(texts);
+
+  // Lens scores
+  var ls = result.lens_scores || {};
+  var lsNames = { see:'&#128065; SEE', think:'&#128161; THINK', feel:'&#10084; FEEL', do:'&#9889; DO' };
+  var lsLabels = ['','Just starting','Getting there','Good job!','Excellent!'];
+  var lsEl = document.getElementById('lens-scores');
+  if (lsEl) {
+    lsEl.innerHTML = LENS_IDS.map(function(lid) {
+      var d = ls[lid] || { score:1, tip:'' };
+      return '<div class="lsc lsc-' + lid + '"><div class="lsc-name">' + lsNames[lid] + '</div>' +
+        '<div class="lsc-num">' + d.score + '/4</div>' +
+        '<div class="lsc-tip">' + (lsLabels[d.score]||'') + (d.tip ? ' — ' + d.tip : '') + '</div></div>';
+    }).join('');
+  }
+
+  hide('loading-screen');
+  show('results-screen');
+
+  var s = result.scores;
+  var total = s.descriptive_details + s.character_development + s.vocabulary + s.sentence_variety;
+  var pct = total / 16;
+
+  document.getElementById('score-num').textContent = total + '/16';
+
+  var circleColor, labelText;
+  if (pct >= 0.85)      { circleColor = '#C0DD97'; labelText = 'Outstanding work! 🌟'; }
+  else if (pct >= 0.70) { circleColor = '#9FE1CB'; labelText = 'Great writing! 🎉'; }
+  else if (pct >= 0.50) { circleColor = '#FAC775'; labelText = 'Good effort! Keep going 👍'; }
+  else                   { circleColor = '#F5C4B3'; labelText = "Nice start! Let's grow 🌱"; }
+
+  document.getElementById('score-circle').style.background = circleColor;
+  document.getElementById('score-label').textContent = labelText;
+  document.getElementById('score-sub').textContent = result.overall_message || '';
+
+  var rubrics = [
+    { key:'descriptive_details',  label:'Descriptive details', color:'#7F77DD' },
+    { key:'character_development',label:'Characters',          color:'#1D9E75' },
+    { key:'vocabulary',           label:'Word choice',         color:'#BA7517' },
+    { key:'sentence_variety',     label:'Sentence variety',    color:'#D85A30' }
+  ];
+  var scoreLabels = ['','Just starting','Getting there','Good job!','Excellent!'];
+  var barsHTML = '';
+  rubrics.forEach(function(r) {
+    var sc = s[r.key] || 1;
+    var w = Math.round(sc / 4 * 100);
+    barsHTML += '<div class="rub-row"><div class="rub-head"><span class="rub-name">' + r.label + '</span><span class="rub-lbl">' + sc + '/4 — ' + scoreLabels[sc] + '</span></div><div class="bar-track"><div class="bar-fill" style="width:0%;background:' + r.color + '" data-w="' + w + '"></div></div></div>';
+  });
+  document.getElementById('rubric-bars').innerHTML = barsHTML;
+  setTimeout(function(){ document.querySelectorAll('.bar-fill').forEach(function(el){ el.style.width = el.dataset.w + '%'; }); }, 80);
+
+  var tagColors = {
+    'Descriptive details': { bg:'#EEEDFE', color:'#534AB7' },
+    'Characters':          { bg:'#E1F5EE', color:'#0F6E56' },
+    'Word choice':         { bg:'#FAEEDA', color:'#854F0B' },
+    'Sentences':           { bg:'#FAECE7', color:'#993C1D' }
+  };
+  var sugHTML = '';
+  (result.suggestions || []).forEach(function(sug) {
+    var c = tagColors[sug.area] || { bg:'#F1EFE8', color:'#5F5E5A' };
+    sugHTML += '<div class="sug-card"><span class="sug-tag" style="background:' + c.bg + ';color:' + c.color + '">' + sug.area + '</span><div class="sug-text">' + sug.tip + '</div></div>';
+  });
+  document.getElementById('suggestions').innerHTML = sugHTML;
+  document.getElementById('improved').textContent = result.improved_example || '';
+  document.getElementById('revision-text').value = '';
+  document.getElementById('rev-check').textContent = '';
+
+  // Save submission
+  var lensTexts = {};
+  LENS_IDS.forEach(function(lid){ lensTexts[lid] = (document.getElementById('text-' + lid)||{}).value||''; });
+  var wordCount = text.trim().split(/\s+/).length;
+  var subs = getSubs();
+  subs.unshift({
+    name: studentName, date: new Date().toISOString(),
+    genre: currentState.genre || '', skill: currentState.skill || '',
+    prompt: currentState.prompt || '', writing: text,
+    wordCount: wordCount, total: total, scores: s,
+    suggestions: result.suggestions || [],
+    improved: result.improved_example || '',
+    overall: result.overall_message || ''
+  });
+  localStorage.setItem('ww_subs', JSON.stringify(subs.slice(0, 200)));
+}
+
+function checkRevision() {
+  var rev = document.getElementById('revision-text').value.trim();
+  var orig = originalWriting;
+  if (!rev || rev.length < 20) { document.getElementById('rev-check').textContent = ''; return; }
+  if (rev.length > orig.length * 1.15)      document.getElementById('rev-check').textContent = '✅ Great — your revision is longer and more detailed!';
+  else if (rev.length > orig.length * 0.9)  document.getElementById('rev-check').textContent = '👍 Good start — can you add even more descriptive words?';
+  else                                       document.getElementById('rev-check').textContent = '⚠️ Your revision is shorter — try adding more detail!';
+}
+
+function resetToWrite() {
+  hide('results-screen');
+  show('writing-screen');
+  LENS_IDS.forEach(function(lid) {
+    var ta = document.getElementById('text-' + lid);
+    if (ta) ta.value = '';
+    var wc = document.getElementById('wc-' + lid);
+    if (wc) wc.textContent = '0 words';
+  });
+  // Reset lens stepper to SEE
+  LENS_IDS.forEach(function(lid, i) {
+    var card = document.getElementById('lens-' + i);
+    var step = document.getElementById('step-' + i);
+    if (card) card.style.display = i === 0 ? 'block' : 'none';
+    if (step) { step.classList.remove('active','done'); if (i === 0) step.classList.add('active'); }
+  });
+  currentLens = 0;
+  document.getElementById('cap-feedback').innerHTML = '';
+  document.getElementById('spell-feedback').innerHTML = '';
+  document.getElementById('error-msg').innerHTML = '';
+  updateSubmitBtn();
+  generatePrompt();
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById(tab + '-view').classList.add('active');
+}
+
+// ── Word lists ────────────────────────────────────────────────────────────
+function buildWordLists() {
+  var sections = [
+    { title:'See — appearance', words: VOCAB.SEE,    color:'#534AB7' },
+    { title:'Think — ideas',    words: VOCAB.THINK,  color:'#0F6E56' },
+    { title:'Feel — emotions',  words: VOCAB.FEEL,   color:'#854F0B' },
+    { title:'Do — actions',     words: VOCAB.DO,     color:'#993C1D' },
+    { title:'Said — happy',     words: SAID.HAPPY,   color:'#0F6E56' },
+    { title:'Said — upset',     words: SAID.UPSET,   color:'#993C1D' },
+    { title:'Said — quiet',     words: SAID.QUIET,   color:'#534AB7' },
+    { title:'Said — loud',      words: SAID.LOUD,    color:'#854F0B' },
+    { title:'Said — neutral',   words: SAID.NEUTRAL, color:'#185FA5' },
+    { title:'Personality',      words: PERSONALITY,  color:'#7F77DD' }
+  ];
+  document.getElementById('word-grid').innerHTML = sections.map(function(sec) {
+    return '<div class="word-col"><h3 style="color:' + sec.color + '">' + sec.title + '</h3><div class="word-pills">' +
+      sec.words.map(function(w){ return '<span class="pill" onclick="copyWord(\'' + w + '\')">' + w + '</span>'; }).join('') +
+      '</div></div>';
+  }).join('');
+}
+
+function copyWord(w) {
+  navigator.clipboard.writeText(w).catch(function(){});
+  var t = document.createElement('div');
+  t.className = 'copy-toast';
+  t.textContent = '"' + w + '" copied!';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 1900);
+}
+
+// ── Teacher panel ─────────────────────────────────────────────────────────
+function openTeacher() {
+  document.getElementById('teacher-overlay').classList.add('open');
+  document.getElementById('pw-screen').style.display = 'block';
+  document.getElementById('settings-screen').style.display = 'none';
+  document.getElementById('pw-err').textContent = '';
+  document.getElementById('pw-input').value = '';
+  setTimeout(function(){ document.getElementById('pw-input').focus(); }, 100);
+}
+function closeTeacher() { document.getElementById('teacher-overlay').classList.remove('open'); }
+function overlayClick(e) { if (e.target === document.getElementById('teacher-overlay')) closeTeacher(); }
+
+function checkPw() {
+  var entered = document.getElementById('pw-input').value;
+  if (entered === teacherPw) {
+    document.getElementById('pw-screen').style.display = 'none';
+    document.getElementById('settings-screen').style.display = 'block';
+    document.getElementById('t-genre').value = localStorage.getItem('ww_genre') || '';
+    document.getElementById('t-skill').value = localStorage.getItem('ww_skill') || '';
+    document.getElementById('t-newpw').value = '';
+    document.getElementById('t-msg').textContent = '';
+    renderDash();
+  } else {
+    document.getElementById('pw-err').textContent = 'Incorrect password. Try again.';
+  }
+}
+
+function saveSettings() {
+  localStorage.setItem('ww_genre', document.getElementById('t-genre').value);
+  localStorage.setItem('ww_skill', document.getElementById('t-skill').value);
+  var newpw = document.getElementById('t-newpw').value.trim();
+  if (newpw) {
+    if (newpw.length < 4) { document.getElementById('t-msg').textContent = 'Password must be at least 4 characters.'; document.getElementById('t-msg').className = 't-msg t-err'; return; }
+    teacherPw = newpw;
+    localStorage.setItem('ww_pw', newpw);
+  }
+  document.getElementById('t-msg').textContent = '✓ Settings saved!';
+  document.getElementById('t-msg').className = 't-msg t-ok';
+  generatePrompt();
+  setTimeout(closeTeacher, 1200);
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────
+function getSubs() {
+  try { return JSON.parse(localStorage.getItem('ww_subs') || '[]'); } catch(e) { return []; }
+}
+
+function renderDash() {
+  var subs = getSubs();
+  var q = (document.getElementById('dash-search').value || '').toLowerCase();
+  var filtered = q ? subs.filter(function(s){ return s.name && s.name.toLowerCase().indexOf(q) !== -1; }) : subs;
+
+  var topEl = document.getElementById('dash-top');
+  var listEl = document.getElementById('dash-list');
+
+  if (!subs.length) {
+    topEl.innerHTML = '';
+    listEl.innerHTML = '<div class="dash-empty">No submissions yet. They will appear here after students check their writing.</div>';
+    return;
+  }
+
+  var avg = Math.round(subs.reduce(function(a,s){ return a + (s.total||0); }, 0) / subs.length * 10) / 10;
+  var names = subs.reduce(function(a,s){ if (a.indexOf(s.name) === -1) a.push(s.name); return a; }, []);
+  topEl.innerHTML = '<div class="dash-top"><div class="dstat"><div class="dstat-num">' + subs.length + '</div><div class="dstat-lbl">Submissions</div></div><div class="dstat"><div class="dstat-num">' + names.length + '</div><div class="dstat-lbl">Students</div></div><div class="dstat"><div class="dstat-num">' + avg + '/16</div><div class="dstat-lbl">Avg score</div></div></div>';
+
+  if (!filtered.length) { listEl.innerHTML = '<div class="dash-empty">No results for that name.</div>'; return; }
+
+  var rubColors = ['#EEEDFE|#534AB7','#E1F5EE|#0F6E56','#FAEEDA|#854F0B','#FAECE7|#993C1D'];
+  var rubKeys   = ['descriptive_details','character_development','vocabulary','sentence_variety'];
+  var rubNames  = ['Details','Characters','Vocab','Sentences'];
+
+  function pillColor(t) {
+    var p = t/16;
+    if (p >= 0.85) return 'background:#C0DD97;color:#27500A';
+    if (p >= 0.70) return 'background:#9FE1CB;color:#085041';
+    if (p >= 0.50) return 'background:#FAC775;color:#633806';
+    return 'background:#F5C4B3;color:#712B13';
+  }
+
+  listEl.innerHTML = filtered.map(function(s, i) {
+    var date = s.date ? new Date(s.date).toLocaleDateString('en-CA',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    var rubHtml = s.scores ? rubKeys.map(function(k,ri){
+      var cols = rubColors[ri].split('|');
+      return '<span class="rub-pill" style="background:' + cols[0] + ';color:' + cols[1] + '">' + rubNames[ri] + ': ' + (s.scores[k]||'–') + '/4</span>';
+    }).join('') : '';
+    var sugHtml = (s.suggestions||[]).map(function(sg){ return '<div style="margin-bottom:5px"><strong style="font-size:11px">' + sg.area + ':</strong> ' + sg.tip + '</div>'; }).join('');
+    return '<div class="sub-card">' +
+      '<div class="sub-head"><div><div class="sub-name">' + s.name + '</div><div class="sub-meta">' + [s.genre, s.skill, date, (s.wordCount||0)+' words'].filter(Boolean).join(' · ') + '</div></div>' +
+      '<span class="score-pill" style="' + pillColor(s.total||0) + '">' + (s.total||0) + '/16</span></div>' +
+      '<div class="sub-rub">' + rubHtml + '</div>' +
+      '<button class="sub-toggle" onclick="toggleSub(\'sd' + i + '\',this)">Show writing & feedback ▾</button>' +
+      '<div class="sub-detail" id="sd' + i + '">' +
+        '<div class="sub-lbl">Prompt</div><div class="sub-txt" style="font-style:italic;color:var(--txt2)">' + (s.prompt||'').substring(0,200) + (s.prompt&&s.prompt.length>200?'...':'') + '</div>' +
+        '<div class="sub-lbl">Student writing</div><div class="sub-txt">' + (s.writing||'') + '</div>' +
+        '<div class="sub-lbl">AI feedback</div><div style="font-size:12px;line-height:1.6;color:var(--txt2)">' + sugHtml + '</div>' +
+        (s.improved ? '<div class="sub-lbl">Example improvement</div><div class="sub-txt" style="background:var(--purple-pale);color:var(--purple)">' + s.improved + '</div>' : '') +
+      '</div></div>';
+  }).join('');
+}
+
+function toggleSub(id, btn) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.classList.toggle('open');
+  btn.textContent = el.classList.contains('open') ? 'Hide writing & feedback ▴' : 'Show writing & feedback ▾';
+}
+
+function clearData() {
+  if (confirm('Delete ALL student submissions? This cannot be undone.')) {
+    localStorage.removeItem('ww_subs');
+    renderDash();
+  }
+}
+
+function exportCSV() {
+  var subs = getSubs();
+  if (!subs.length) { alert('No submissions to export.'); return; }
+  var headers = ['Name','Date','Genre','Skill','Words','Total','Details','Characters','Vocabulary','Sentences','Writing'];
+  var rows = subs.map(function(s) {
+    return [
+      s.name||'', s.date ? new Date(s.date).toLocaleDateString() : '',
+      s.genre||'', s.skill||'', s.wordCount||0, s.total||0,
+      s.scores ? s.scores.descriptive_details : '',
+      s.scores ? s.scores.character_development : '',
+      s.scores ? s.scores.vocabulary : '',
+      s.scores ? s.scores.sentence_variety : '',
+      '"' + (s.writing||'').replace(/"/g,'""') + '"'
+    ].join(',');
+  });
+  var csv = [headers.join(',')].concat(rows).join('\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'writing_submissions_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+buildWordLists();
+buildVocabBars();
+if (studentName) {
+  hide('name-screen');
+  show('writing-screen');
+  document.getElementById('greeting-name').textContent = studentName;
+  generatePrompt();
+}
+</script>
+</body>
+</html>
